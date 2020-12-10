@@ -1,4 +1,4 @@
-import sys
+import glob
 
 def data_parser(input_str):
     input_list = input_str.split('\n')
@@ -104,7 +104,6 @@ def clue_parser(line):
 
                 elif line_elements[3] == '-':
                     return [6, [x, a, y, b, n, m]]
-                
             else:
                 return [4, [x, a, y, b, n]]
 
@@ -251,6 +250,7 @@ def find_empty(subjects, attributes):
 
 
 def solve(subjects, data):
+    attributes = list(data.keys())
     find = find_empty(subjects,attributes)
     if not find:
         return True
@@ -296,20 +296,40 @@ def show_result(subjects, data):
                 subject_line += "| "
 
         print(subject_line)
+
+
+clue_files = glob.glob("clues-*.txt")
+data_files = glob.glob("data-*.txt")
+
+available_problems = []
+
+for filename in clue_files:
+    problem_no = filename[6:7]
+    data_filename = "data-" + problem_no + ".txt"
+    if data_filename in data_files:
+        available_problems.append(problem_no)
     
 
-data_file_name = sys.argv[1]
-clue_file_name = sys.argv[2]
+print("The problems available in your directory: " + str(available_problems))
 
-data_input_str = open("files/" + data_file_name).read()
-clue_input_str = open("files/" + clue_file_name).read()
+problem_input = input("Choose a problem: ")
+
+if problem_input in available_problems:
+    data_file_name = 'data-' + problem_input + '.txt'
+    clue_file_name = 'clues-' + problem_input + '.txt'
+else:
+    print("Wrong input")
+    exit()
+
+print("\nHere is the solution for the problem defined in " + data_file_name + " and " + clue_file_name + ":")
+
+data_input_str = open(data_file_name).read()
+clue_input_str = open(clue_file_name).read()
 
 data = data_parser(data_input_str)
 
 clues = []
-
 clue_input_list = clue_input_str.split('\n')
-
 for line in clue_input_list:
     if(len(line) > 0):
         clues.append(clue_parser(line))
@@ -317,8 +337,6 @@ for line in clue_input_list:
 subjects = []
 for attr in list(data.keys()):
     subjects.append({})
-
-attributes = list(data.keys())
 
 solve(subjects, data)
 show_result(subjects, data)
