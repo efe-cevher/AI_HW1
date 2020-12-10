@@ -4,43 +4,37 @@ def data_parser(input_str):
     input_list = input_str.split('\n')
     data = {}
     for line in input_list:
-        if not len(line) > 1:
-            break
-        attr_input_list = line.split(",")
-        attr_name = attr_input_list[0]
-        domains = attr_input_list[1:]
-        data[attr_name] = domains
+        if(len(line) > 0):
+            attr_input_list = line.split(",")
+            attr_name = attr_input_list[0]
+            domains = attr_input_list[1:]
+            data[attr_name] = domains
     return data
 
 def clue_parser(line):
     line_elements = line.split(" ")
     if line_elements[0] == "if":
         equality = line_elements[1].split('=')
-        x = equality[0]
-        a = equality[1]
+        x, a = equality[0], equality[1]
 
         if line_elements[3] == "not":
             equality = line_elements[4].split('=')
-            y = equality[0]
-            b = equality[1]
+            y, b = equality[0], equality[1]
 
             return [2, [x, a, y, b]]
 
         elif line_elements[3] == "either":
             equality = line_elements[4].split('=')
-            y = equality[0]
-            b = equality[1]
+            y, b = equality[0], equality[1]
 
             equality = line_elements[6].split('=')
-            z = equality[0]
-            c = equality[1]
+            z, c = equality[0], equality[1]
 
             return [3, [x, a, y, b, z, c]]
         
         else:
             equality = line_elements[3].split('=')
-            y = equality[0]
-            b = equality[1]
+            y, b = equality[0], equality[1]
 
             return [1, [x, a, y, b]]
 
@@ -49,20 +43,16 @@ def clue_parser(line):
         equalities = line_elements[2][1:-1].split(',')
         
         equality = equalities[0].split('=')
-        x = equality[0]
-        a = equality[1]
+        x, a = equality[0], equality[1]
 
         equality = equalities[1].split('=')
-        y = equality[0]
-        b = equality[1]
+        y, b = equality[0], equality[1]
 
         equality = line_elements[5].split('=')
-        z = equality[0]
-        c = equality[1]
+        z, c = equality[0], equality[1]
 
         equality = line_elements[7].split('=')
-        t = equality[0]
-        d = equality[1]
+        t, d = equality[0], equality[1]
 
         return [9, [x, a, y, b, z, c, t, d]]
 
@@ -70,39 +60,33 @@ def clue_parser(line):
         equalities = line_elements[0][1:-1].split(',')
 
         equality = equalities[0].split('=')
-        x = equality[0]
-        a = equality[1]
+        x, a = equality[0], equality[1]
 
         equality = equalities[1].split('=')
-        y = equality[0]
-        b = equality[1]
+        y, b = equality[0], equality[1]
 
         equality = equalities[2].split('=')
-        z = equality[0]
-        c = equality[1]
-
+        z, c = equality[0], equality[1]
+        
         return [10, [x, a, y, b, z, c]]
 
     else:
         tmp = line_elements[0].split('(')
         n = tmp[0]
         equality = tmp[1][:-1].split('=')
-        x = equality[0]
-        a = equality[1]
+        x, a = equality[0], equality[1]
 
         if line_elements[1] == '>':
             tmp = line_elements[2].split('(')
             equality = tmp[1][:-1].split("=")
-            y = equality[0]
-            b = equality[1]
+            y, b = equality[0], equality[1]
 
             return [7, [x, a, y, b, n]]
 
         elif line_elements[1] == '<':
             tmp = line_elements[2].split('(')
             equality = tmp[1][:-1]
-            y = equality[0]
-            b = equality[1]
+            y, b = equality[0], equality[1]
 
             return [8, [x, a, y, b, n]]
 
@@ -110,15 +94,17 @@ def clue_parser(line):
             tmp = line_elements[2].split('(')
             equality = tmp[1][:-1].split('=')
 
-            y = equality[0]
-            b = equality[1]
+            y, b = equality[0], equality[1]
 
             if len(line_elements) > 3:
                 m = int(line_elements[4])
+
                 if line_elements[3] == '+':
                     return [5, [x, a, y, b, n, m]]
+
                 elif line_elements[3] == '-':
                     return [6, [x, a, y, b, n, m]]
+                
             else:
                 return [4, [x, a, y, b, n]]
 
@@ -179,7 +165,7 @@ def clue_9(s1, s2, x, a, y, b, z, c, t, d):
     return True
 
 def clue_10(s1, s2, s3, x, a, y, b, z, c):
-    if ({x}.issubset(set(s1.keys())) and {y}.issubset(set(s2.keys())) and {z}.issubset(set(s3.keys()))):
+    if {x}.issubset(set(s1.keys())) and {y}.issubset(set(s2.keys())) and {z}.issubset(set(s3.keys())):
         if s1[x] == a and s2[y] == b and s3[z] == c:
             return s1!=s2 and s2!=s3 and s1!=s3
         
@@ -296,7 +282,7 @@ def show_result(subjects, data):
             attributes_line += "| "
     print(attributes_line)
 
-    print('--------------------------------------------')
+    print('-------------------------------------------------')
     
     for subject in subjects:
         subject_line = ""
@@ -328,7 +314,10 @@ for line in clue_input_list:
     if(len(line) > 0):
         clues.append(clue_parser(line))
 
-subjects = [{},{},{},{}]
+subjects = []
+for attr in list(data.keys()):
+    subjects.append({})
+
 attributes = list(data.keys())
 
 solve(subjects, data)
