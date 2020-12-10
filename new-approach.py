@@ -115,15 +115,14 @@ def clue_parser(line):
             if len(line_elements) > 3:
                 m = int(line_elements[4])
                 if line_elements[3] == '+':
-                    return [5, 2, [x, a, y, b, n, m]]
+                    return [5, [x, a, y, b, n, m]]
                 elif line_elements[3] == '-':
-                    return [6, 2, [x, a, y, b, n, m]]
+                    return [6, [x, a, y, b, n, m]]
             else:
                 return [4, [x, a, y, b, n]]
 
 def clue_1(s, x, a, y, b):
     if {x, y}.issubset(set(s.keys())):
-        print(s[x])
         if s[x] == a:
             return s[y] == b
     return True
@@ -241,6 +240,13 @@ def isConsistent(subjects):
                     for s3 in subjects:
                         if not clue_10(s1, s2, s3, clue[1][0], clue[1][1], clue[1][2], clue[1][3], clue[1][4], clue[1][5]):
                             return False
+    
+    for s1 in subjects:
+        for s2 in subjects:
+            for val in s2.values():
+                if val in s1.values() and s1!=s2:
+                    return False
+        
     return True
 
 
@@ -263,26 +269,48 @@ for line in clue_input_list:
 
 
 subjects = [{},{},{},{}]
+attributes = list(data.keys())
 
-first_attr = list(data.keys())[0]
-
+"""
 i = 0
-for val in data[first_attr]:
-    subjects[i][first_attr] = val
-    i+=1
-i=0
-for val in data['owners']:
-    subjects[i]['owners'] = val
-    i+=1
-i=0 
-for val in data['breeds']:
-    subjects[i]['breeds'] = val
-    i+=1
-i=0
-for val in data['dogs']:
-    subjects[i]['dogs'] = val
+for val in data[attributes[0]]:
+    subjects[i][attributes[0]] = val
     i+=1
 
+for val in data[attributes[1]]:
+    for i in range(len(data[attributes[0]])):
+        subjects[i][attributes[1]] = val
+"""
+
+def find_empty(subjects, attributes):
+    i = 0
+    for subject in subjects:
+        for attr in attributes:
+            if not {attr}.issubset(set(subject.keys())):
+                
+                return (i, attr)
+        i+=1
+    return None
+
+
+def solve(subjects):
+    find = find_empty(subjects,attributes)
+    if not find:
+        return True
+    else:
+        subject_no, attr = find
+
+    for a in data[attr]:
+        subjects[subject_no][attr] = a
+        if isConsistent(subjects):
+            if solve(subjects):
+                return True
+        
+        subjects[subject_no].pop(attr)
+
+    return False
+
+solve(subjects)
 
 print(subjects)
 print(isConsistent(subjects))
