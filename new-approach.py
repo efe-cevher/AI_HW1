@@ -45,21 +45,22 @@ def clue_parser(line):
             return [1, [x, a, y, b]]
 
     elif line_elements[0] == "one":
-        equalities = line_elements[2][1:-1].split(',')
 
-        equality = equalities[0]
+        equalities = line_elements[2][1:-1].split(',')
+        
+        equality = equalities[0].split('=')
         x = equality[0]
         a = equality[1]
 
-        equality = equalities[1]
+        equality = equalities[1].split('=')
         y = equality[0]
         b = equality[1]
 
-        equality = line_elements[5]
+        equality = line_elements[5].split('=')
         z = equality[0]
         c = equality[1]
 
-        equality = line_elements[7]
+        equality = line_elements[7].split('=')
         t = equality[0]
         d = equality[1]
 
@@ -68,15 +69,15 @@ def clue_parser(line):
     elif line_elements[0][0] == "{":
         equalities = line_elements[0][1:-1].split(',')
 
-        equality = equalities[0]
+        equality = equalities[0].split('=')
         x = equality[0]
         a = equality[1]
 
-        equality = equalities[1]
+        equality = equalities[1].split('=')
         y = equality[0]
         b = equality[1]
 
-        equality = equalities[2]
+        equality = equalities[2].split('=')
         z = equality[0]
         c = equality[1]
 
@@ -171,14 +172,17 @@ def clue_8(s1, s2, x, a, y, b, n):
 
 def clue_9(s1, s2, x, a, y, b, z, c, t, d):
     if {x, z, t}.issubset(set(s1.keys())) and {y, z, t}.issubset(set(s2.keys())):
-        if s1[x] == a and s2[y] == b and s1 != s2:
+        if s1[x] == a and s2[y] == b:
+            if s1 == s2:
+                return False
             return (s1[z] == c and s2[t] == d) or (s1[t] == d and s2[z] == c)
     return True
 
 def clue_10(s1, s2, s3, x, a, y, b, z, c):
-    if {x}.issubset(set(s1.keys())) and {y}.issubset(set(s2.keys())) and {z}.issubset(set(s3.keys())):
+    if ({x}.issubset(set(s1.keys())) and {y}.issubset(set(s2.keys())) and {z}.issubset(set(s3.keys()))):
         if s1[x] == a and s2[y] == b and s3[z] == c:
             return s1!=s2 and s2!=s3 and s1!=s3
+        
     return True
 
 def isConsistent(subjects):
@@ -192,7 +196,7 @@ def isConsistent(subjects):
             for subject in subjects:
                 if not clue_2(subject, clue[1][0], clue[1][1], clue[1][2], clue[1][3]):
                     return False
-
+                    
         elif clue[0] == 3:
             for subject in subjects:
                 if not clue_3(subject, clue[1][0], clue[1][1], clue[1][2], clue[1][3], clue[1][4], clue[1][5]):
@@ -249,7 +253,64 @@ def isConsistent(subjects):
         
     return True
 
+def find_empty(subjects, attributes):
+    i = 0
+    for subject in subjects:
+        for attr in attributes:
+            if not {attr}.issubset(set(subject.keys())):
+                
+                return (i, attr)
+        i+=1
+    return None
 
+
+def solve(subjects, data):
+    find = find_empty(subjects,attributes)
+    if not find:
+        return True
+    else:
+        subject_no, attr = find
+
+    for a in data[attr]:
+        subjects[subject_no][attr] = a
+        if isConsistent(subjects):
+            if solve(subjects, data):
+                return True
+        
+        subjects[subject_no].pop(attr)
+
+    return False
+
+def show_result(subjects, data):
+    attributes = list(data.keys())
+    attributes_line = ""
+    space = 12
+
+    for attr in attributes:
+        attributes_line += attr
+
+        for i in range(space - len(attr)):   
+            attributes_line += " "
+
+        if len(attributes) > attributes.index(attr) + 1:
+            attributes_line += "| "
+    print(attributes_line)
+
+    print('--------------------------------------------')
+    
+    for subject in subjects:
+        subject_line = ""
+        for val in subject.values():
+            subject_line += val
+            
+            for i in range(space - len(val)):   
+                subject_line += " "
+
+            if len(subject.values()) > list(subject.values()).index(val) + 1:
+                subject_line += "| "
+
+        print(subject_line)
+    
 
 data_file_name = sys.argv[1]
 clue_file_name = sys.argv[2]
@@ -267,50 +328,8 @@ for line in clue_input_list:
     if(len(line) > 0):
         clues.append(clue_parser(line))
 
-
 subjects = [{},{},{},{}]
 attributes = list(data.keys())
 
-"""
-i = 0
-for val in data[attributes[0]]:
-    subjects[i][attributes[0]] = val
-    i+=1
-
-for val in data[attributes[1]]:
-    for i in range(len(data[attributes[0]])):
-        subjects[i][attributes[1]] = val
-"""
-
-def find_empty(subjects, attributes):
-    i = 0
-    for subject in subjects:
-        for attr in attributes:
-            if not {attr}.issubset(set(subject.keys())):
-                
-                return (i, attr)
-        i+=1
-    return None
-
-
-def solve(subjects):
-    find = find_empty(subjects,attributes)
-    if not find:
-        return True
-    else:
-        subject_no, attr = find
-
-    for a in data[attr]:
-        subjects[subject_no][attr] = a
-        if isConsistent(subjects):
-            if solve(subjects):
-                return True
-        
-        subjects[subject_no].pop(attr)
-
-    return False
-
-solve(subjects)
-
-print(subjects)
-print(isConsistent(subjects))
+solve(subjects, data)
+show_result(subjects, data)
